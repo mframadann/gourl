@@ -9,8 +9,7 @@ type LinkRepository interface {
 	Create(link models.Link) error
 	Update(linkId uint, link models.Link) error
 	Delete(linkId uint) error
-	GetById(linkId uint) (models.Link, error)
-	GetAll() ([]models.Link, error)
+	GetAll() ([]models.APILink, error)
 }
 
 type dbItem struct {
@@ -21,24 +20,18 @@ func (db *dbItem) Create(link models.Link) error {
 	return db.Conn.Create(&link).Error
 }
 
-func (db *dbItem) Delete(linkId uint) error {
-	return db.Conn.Delete(&models.Link{ID: linkId}).Error
-}
-
-func (db *dbItem) GetAll() ([]models.Link, error) {
-	var data []models.Link
-	result := db.Conn.Find(&data)
-	return data, result.Error
-}
-
-func (db *dbItem) GetById(linkId uint) (models.Link, error) {
-	var data models.Link
-	result := db.Conn.Where("id_item", linkId).First(&data)
+func (db *dbItem) GetAll() ([]models.APILink, error) {
+	var data []models.APILink
+	result := db.Conn.Model(&models.Link{}).Find(&data)
 	return data, result.Error
 }
 
 func (db *dbItem) Update(linkId uint, item models.Link) error {
-	return db.Conn.Where("id_item", linkId).Updates(item).Error
+	return db.Conn.Where("link_id", linkId).Updates(item).Error
+}
+
+func (db *dbItem) Delete(linkId uint) error {
+	return db.Conn.Delete(&models.Link{ID: linkId}).Error
 }
 
 func NewLinkRepository(Conn *gorm.DB) LinkRepository {

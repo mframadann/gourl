@@ -19,6 +19,7 @@ CREATE TABLE tb_links (
     link_id SERIAL PRIMARY KEY,
     user_id INT REFERENCES tb_users(user_id),
     group_id INT REFERENCES tb_groups(group_id),
+    link_title VARCHAR(30)
     shorted_url VARCHAR UNIQUE,
     origin_url VARCHAR,
     created_at DATE,

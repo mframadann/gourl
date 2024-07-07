@@ -3,8 +3,8 @@ package controllers
 import (
 	"net/http"
 
-	vl "github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
+	"github.com/mframadann/gourl/domain/link/dto"
 	"github.com/mframadann/gourl/domain/link/models"
 	"github.com/mframadann/gourl/domain/link/services"
 	"github.com/mframadann/gourl/helpers"
@@ -12,49 +12,84 @@ import (
 )
 
 type LinkController struct {
-	itemService services.LinkService
-	validate    vl.Validate
+	LinkService services.LinkService
+}
+
+func (controller LinkController) GetAll(c echo.Context) error {
+	resp := controller.LinkService.GetAll()
+	return c.JSON(http.StatusOK, resp)
 }
 
 func (controller LinkController) Create(c echo.Context) error {
-	type payload struct {
-		UserID     *uint  `json:"user_id"`
-		GroupID    *uint  `json:"group_id" `
-		ShortedURL string `json:"shorted_url"`
-		OriginURL  string `json:"origin_url" validate:"required"`
-	}
+	l := new(dto.CreateLinkPayload)
 
-	payloadValidator := new(payload)
-
-	if err := c.Bind(payloadValidator); err != nil {
+	if err := c.Bind(l); err != nil {
 		return err
 	}
 
-	if err := controller.validate.Struct(payloadValidator); err != nil {
+	if err := c.Validate(l); err != nil {
 		return err
 	}
 
-	if payloadValidator.ShortedURL == "" {
-		payloadValidator.ShortedURL = helpers.GenerateRandomShortenedLink()
+	if l.ShortedURL == "" {
+		l.ShortedURL = helpers.GenerateRandomShortenedLink()
 	}
 
-	result := controller.itemService.Create(
+	result := controller.LinkService.Create(
 		models.Link{
-			UserID:     payloadValidator.UserID,
-			GroupID:    payloadValidator.GroupID,
-			ShortedURL: payloadValidator.ShortedURL,
-			OriginURL:  payloadValidator.OriginURL,
+			GroupID:    l.GroupID,
+			LinkTitle:  l.Title,
+			ShortedURL: l.ShortedURL,
+			OriginURL:  l.OriginURL,
 		},
 	)
 
 	return c.JSON(http.StatusOK, result)
 }
 
+func (controller LinkController) Update(c echo.Context) error {
+	l := new(dto.UpdateLinkPayload)
+
+	if err := c.Bind(l); err != nil {
+		return err
+	}
+
+	if err := c.Validate(l); err != nil {
+		return err
+	}
+
+	result := controller.LinkService.Update(
+		l.ID,
+		models.Link{
+			GroupID:    l.GroupID,
+			LinkTitle:  l.Title,
+			ShortedURL: l.ShortedURL,
+			OriginURL:  l.OriginURL,
+		},
+	)
+
+	return c.JSON(http.StatusAccepted, result)
+}
+
+func (controller LinkController) Delete(c echo.Context) error {
+	l := new(dto.DeleteLinkPalyload)
+
+	if err := c.Bind(l); err != nil {
+		return err
+	}
+
+	if err := c.Validate(l); err != nil {
+		return err
+	}
+
+	result := controller.LinkService.Delete(l.ID)
+	return c.JSON(http.StatusOK, result)
+}
+
 func NewItemController(db *gorm.DB) LinkController {
 	service := services.NewLinkService(db)
 	controller := LinkController{
-		itemService: service,
-		validate:    *vl.New(),
+		LinkService: service,
 	}
 
 	return controller
