@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 type Link struct {
 	ID         uint   `json:"link_id" gorm:"column:link_id"`
@@ -14,6 +16,7 @@ type Link struct {
 }
 
 type APILink struct {
+	ID         uint   `json:"link_id" gorm:"column:link_id"`
 	LinkTitle  string `json:"link_title"`
 	ShortedURL string `json:"shorted_url"`
 	OriginURL  string `json:"origin_url"`

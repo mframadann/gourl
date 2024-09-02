@@ -1,9 +1,8 @@
-package helpers
+package utils
 
 import (
 	"fmt"
 	"net/http"
-	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -18,20 +17,15 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 }
 
 func UseReadableErrMsg(err error, c echo.Context) {
-	env := os.Getenv("APP_STATUS")
+
 	report, ok := err.(*echo.HTTPError)
 
 	if !ok {
 		report = echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	if env == "PRODUCTION" {
-		report.Message = "Internal Server Error"
-	}
-
 	if castedObject, ok := err.(validator.ValidationErrors); ok {
 		report.Code = 400
-
 		for _, err := range castedObject {
 			switch err.Tag() {
 			case "required":

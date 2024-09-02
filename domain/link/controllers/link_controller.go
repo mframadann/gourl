@@ -7,7 +7,7 @@ import (
 	"github.com/mframadann/gourl/domain/link/dto"
 	"github.com/mframadann/gourl/domain/link/models"
 	"github.com/mframadann/gourl/domain/link/services"
-	"github.com/mframadann/gourl/helpers"
+	"github.com/mframadann/gourl/utils"
 	"gorm.io/gorm"
 )
 
@@ -16,7 +16,13 @@ type LinkController struct {
 }
 
 func (controller LinkController) GetAll(c echo.Context) error {
-	resp := controller.LinkService.GetAll()
+	q := new(dto.GetLinkQueries)
+
+	if err := c.Bind(q); err != nil {
+		return err
+	}
+
+	resp := controller.LinkService.GetAll(*q)
 	return c.JSON(http.StatusOK, resp)
 }
 
@@ -32,7 +38,7 @@ func (controller LinkController) Create(c echo.Context) error {
 	}
 
 	if l.ShortedURL == "" {
-		l.ShortedURL = helpers.GenerateRandomShortenedLink()
+		l.ShortedURL = utils.GenerateRandomShortenedLink()
 	}
 
 	result := controller.LinkService.Create(
@@ -44,7 +50,7 @@ func (controller LinkController) Create(c echo.Context) error {
 		},
 	)
 
-	return c.JSON(http.StatusOK, result)
+	return c.JSON(result.StatusCode, result)
 }
 
 func (controller LinkController) Update(c echo.Context) error {

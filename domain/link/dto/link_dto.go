@@ -7,6 +7,10 @@ type CreateLinkPayload struct {
 	OriginURL  string `json:"origin_url" validate:"required"`
 }
 
+type GetLinkQueries struct {
+	OrderByGrup bool `query:"order_by_group"`
+}
+
 type UpdateLinkPayload struct {
 	ID uint `json:"link_id"`
 	CreateLinkPayload
